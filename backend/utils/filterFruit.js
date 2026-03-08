@@ -1,4 +1,6 @@
 function filterFruit(fruits, { color, in_season, name } = {}) {
+  const normalizedName = typeof name === "string" ? name.trim().toLowerCase() : "";
+
   const filtered = fruits.filter((fruit) => {
     if (color && fruit.color.toLowerCase() !== color.toLowerCase()) {
       return false;
@@ -7,7 +9,7 @@ function filterFruit(fruits, { color, in_season, name } = {}) {
     if (in_season === "true" && fruit.in_season !== true) return false;
     if (in_season === "false" && fruit.in_season !== false) return false;
 
-    if (name && !fruit.name.toLowerCase().includes(name.toLowerCase())) {
+    if (normalizedName && !fruit.name.toLowerCase().includes(normalizedName)) {
       return false;
     }
 

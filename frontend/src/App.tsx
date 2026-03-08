@@ -11,7 +11,7 @@ const EMPTY_FILTERS: FruitFilters = { name: "", color: "", in_season: "" };
 function readFiltersFromURL(): FruitFilters {
   const params = new URLSearchParams(window.location.search);
   return {
-    name: params.get("name") ?? "",
+    name: (params.get("name") ?? "").trim(),
     color: params.get("color") ?? "",
     in_season: params.get("in_season") ?? "",
   };
@@ -49,7 +49,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const effectiveFilters: FruitFilters = { name: debouncedName, color, in_season };
+    const effectiveFilters: FruitFilters = { name: debouncedName.trim(), color, in_season };
     pushFiltersToURL(effectiveFilters);
     loadFruit(effectiveFilters);
   }, [debouncedName, color, in_season, loadFruit]);
@@ -73,7 +73,9 @@ export default function App() {
         <FilterBar
           filters={filters}
           onChange={setFilters}
-          onReset={() => setFilters(EMPTY_FILTERS)}
+          onReset={() =>
+            setFilters((prev) => ({ ...EMPTY_FILTERS, name: prev.name }))
+          }
         />
 
         <div aria-live="polite" aria-atomic="true" className="results-meta">
