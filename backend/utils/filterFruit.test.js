@@ -48,6 +48,12 @@ test("filters by name — partial match, case-insensitive", () => {
   assert.ok(result.every((f) => f.name.toLowerCase().includes("app")));
 });
 
+test("filters by name when query has surrounding whitespace", () => {
+  const result = filterFruit(FRUITS, { name: "  app  " });
+  assert.equal(result.length, 2);
+  assert.ok(result.every((f) => f.name.toLowerCase().includes("app")));
+});
+
 test("combines color and in_season filters", () => {
   const result = filterFruit(FRUITS, { color: "red", in_season: "true" });
   assert.ok(result.every((f) => f.color === "red" && f.in_season === true));

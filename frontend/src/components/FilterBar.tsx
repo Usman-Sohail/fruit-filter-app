@@ -13,7 +13,7 @@ export default function FilterBar({ filters, onChange, onReset }: Props) {
     onChange({ ...filters, [field]: value });
   }
 
-  const hasFilters = filters.name || filters.color || filters.in_season;
+  const hasFilters = filters.color || filters.in_season;
 
   return (
     <div className="filter-bar">

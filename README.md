@@ -122,7 +122,7 @@ GET /api/fruit?name=berry&in_season=false
 - Filters are reflected in and initialized from the browser URL query string
 - Browser back/forward navigation restores filter state correctly
 - Name input is debounced (300 ms) to avoid hammering the API on every keystroke
-- Clear filters button resets all filters and URL
+- Clear filters button resets all filters
 - Results count shown after every fetch
 - Loading, error, and empty-state feedback with appropriate ARIA roles
 - Vite dev proxy — frontend code uses relative `/api` paths, no hardcoded ports
