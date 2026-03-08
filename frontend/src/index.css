@@ -130,6 +130,48 @@ body {
   border-bottom: 1px solid #e2e8f0;
 }
 
+.sort-btn {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sort-btn:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.sort-label {
+  display: inline-block;
+}
+
+.sort-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  font-size: 0.9em;
+  line-height: 1;
+  color: #94a3b8;
+  transition: color 0.15s ease;
+}
+
+.sort-indicator.up,
+.sort-indicator.down {
+  color: #475569;
+}
+
 .fruit-table td {
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid #f1f5f9;
