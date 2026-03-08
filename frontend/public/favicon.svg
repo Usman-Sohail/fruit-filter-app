@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Fruit Browser icon">
+  <defs>
+    <linearGradient id="appleRed" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff6b6b" />
+      <stop offset="100%" stop-color="#c62828" />
+    </linearGradient>
+    <linearGradient id="leafGreen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7ed957" />
+      <stop offset="100%" stop-color="#2e7d32" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="#fff7ed" />
+  <path d="M33 16c0-3 1-5 4-7c1 3 0 6-2 8c-1 1-2 1-2-1Z" fill="#6d4c41" />
+  <path d="M35 16c6-6 13-4 15 1c-7 2-12 2-15-1Z" fill="url(#leafGreen)" />
+  <path d="M32 22c-10 0-18 7-18 18c0 9 7 16 18 16s18-7 18-16c0-11-8-18-18-18Z" fill="url(#appleRed)" />
+  <circle cx="26" cy="35" r="4" fill="#ffd4d4" opacity=".5" />
+</svg>
