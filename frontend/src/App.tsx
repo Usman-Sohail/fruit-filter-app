@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import type { Fruit, FruitFilters } from "./types/fruit";
 import { fetchFruit } from "./api/fruitApi";
 import { useDebounce } from "./hooks/useDebounce";
@@ -17,13 +17,30 @@ function readFiltersFromURL(): FruitFilters {
   };
 }
 
-function pushFiltersToURL(filters: FruitFilters) {
+function areFiltersEqual(a: FruitFilters, b: FruitFilters): boolean {
+  return a.name === b.name && a.color === b.color && a.in_season === b.in_season;
+}
+
+function buildSearchFromFilters(filters: FruitFilters): string {
   const params = new URLSearchParams();
   if (filters.name) params.set("name", filters.name);
   if (filters.color) params.set("color", filters.color);
   if (filters.in_season) params.set("in_season", filters.in_season);
   const search = params.toString();
-  window.history.pushState(null, "", search ? `?${search}` : window.location.pathname);
+  return search ? `?${search}` : "";
+}
+
+function syncFiltersToURL(filters: FruitFilters, mode: "push" | "replace") {
+  const nextSearch = buildSearchFromFilters(filters);
+  if (window.location.search === nextSearch) return;
+
+  const nextURL = `${window.location.pathname}${nextSearch}`;
+  if (mode === "replace") {
+    window.history.replaceState(null, "", nextURL);
+    return;
+  }
+
+  window.history.pushState(null, "", nextURL);
 }
 
 export default function App() {
@@ -31,6 +48,7 @@ export default function App() {
   const [fruits, setFruits] = useState<Fruit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const shouldReplaceHistoryRef = useRef(false);
 
   const debouncedName = useDebounce(filters.name, 300);
   const { color, in_season } = filters;
@@ -50,12 +68,20 @@ export default function App() {
 
   useEffect(() => {
     const effectiveFilters: FruitFilters = { name: debouncedName.trim(), color, in_season };
-    pushFiltersToURL(effectiveFilters);
+    syncFiltersToURL(effectiveFilters, shouldReplaceHistoryRef.current ? "replace" : "push");
+    shouldReplaceHistoryRef.current = false;
     loadFruit(effectiveFilters);
   }, [debouncedName, color, in_season, loadFruit]);
 
   useEffect(() => {
-    const handlePop = () => setFilters(readFiltersFromURL());
+    const handlePop = () => {
+      const nextFilters = readFiltersFromURL();
+      setFilters((prev) => {
+        if (areFiltersEqual(prev, nextFilters)) return prev;
+        shouldReplaceHistoryRef.current = true;
+        return nextFilters;
+      });
+    };
     window.addEventListener("popstate", handlePop);
     return () => window.removeEventListener("popstate", handlePop);
   }, []);
