@@ -4,7 +4,10 @@ import { fetchFruit } from "./api/fruitApi";
 import { useDebounce } from "./hooks/useDebounce";
 import FilterBar from "./components/FilterBar";
 import FruitList from "./components/FruitList";
+import NotFound from "./components/NotFound";
 import "./index.css";
+
+const KNOWN_PATHS = ["/", "/index.html"];
 
 const EMPTY_FILTERS: FruitFilters = { name: "", color: "", in_season: "" };
 
@@ -44,6 +47,10 @@ function syncFiltersToURL(filters: FruitFilters, mode: "push" | "replace") {
 }
 
 export default function App() {
+  if (!KNOWN_PATHS.includes(window.location.pathname)) {
+    return <NotFound />;
+  }
+
   const [filters, setFilters] = useState<FruitFilters>(readFiltersFromURL);
   const [fruits, setFruits] = useState<Fruit[]>([]);
   const [loading, setLoading] = useState(true);
