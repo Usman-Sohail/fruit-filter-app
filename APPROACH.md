@@ -24,13 +24,15 @@ All three filters are applied in a single `.filter()` pass:
 
 - **`color`**: `toLowerCase()` on both sides — `?color=RED` behaves the same as `?color=red`.
 - **`in_season`**: The query string is always a string, so we guard strictly for `"true"` or `"false"`. Any other value (e.g. `?in_season=banana`) is **ignored** rather than silently misfiltering. The alternative — treating any non-`"true"` string as `false` — would return wrong results and be very hard to debug.
-- **`name`**: `String.prototype.includes()` after lowercasing both sides — partial, case-insensitive.
+- **`name`**: query is trimmed then matched via `String.prototype.includes()` after lowercasing both sides — partial, case-insensitive, and resilient to surrounding whitespace.
 
-Results are sorted alphabetically by name before returning, so the response is always in a predictable order regardless of the JSON file's arrangement.
+At route level, query values are sanitized to strings before reaching the filter utility. This avoids runtime crashes from malformed query shapes (e.g. repeated params producing arrays).
+
+Results are sorted alphabetically by name before returning, so the API response is always in a predictable order regardless of the JSON file's arrangement.
 
 ### Unit tests
 
-`filterFruit` is a pure function with no side effects — the ideal unit test target. Tests use Node's built-in `node:test` and `node:assert` modules (Node 18+), so there are zero extra test dependencies. Ten tests cover: no filters, each filter individually, combinations, invalid `in_season` values, empty result set, and empty input.
+`filterFruit` is a pure function with no side effects — the ideal unit test target. Tests use Node's built-in `node:test` and `node:assert` modules (Node 18+), so there are zero extra test dependencies. Eleven tests cover: no filters, each filter individually, combinations, invalid `in_season` values, whitespace name input, empty result set, and empty input.
 
 ---
 
@@ -38,7 +40,7 @@ Results are sorted alphabetically by name before returning, so the response is a
 
 ### No React Router
 
-URL sync is handled directly with `URLSearchParams`, `window.history.pushState`, and a `popstate` listener. This covers the full requirement (shareable URLs, back/forward support) with no extra dependencies and is straightforward to follow.
+URL sync is handled directly with `URLSearchParams`, `window.history.pushState`, `window.history.replaceState`, and a `popstate` listener. This covers the full requirement (shareable URLs, back/forward support) with no extra dependencies and keeps browser history behavior stable.
 
 ### Vite dev proxy
 
@@ -48,7 +50,7 @@ The frontend uses relative paths (`/api/fruit`) rather than hardcoding `http://l
 
 Without debounce, typing "strawberry" fires 10 API requests. With `useDebounce(filters.name, 300)`, we wait for 300 ms of inactivity before fetching. Dropdown selections (color, in_season) don't need this — they represent discrete, intentional choices and should feel instant.
 
-The debounce also applies to URL `pushState`: we don't push a new history entry on every keystroke, only after the user pauses.
+The debounce also applies to URL updates: we don't push a new history entry on every keystroke, only after the user pauses.
 
 ### State design
 
@@ -59,7 +61,8 @@ One `filters` object drives everything: `{ name, color, in_season }`. When filte
 Kept small and flat — two focused components plus the root App:
 
 - `FilterBar` — controlled inputs, calls `onChange` with the full updated filters object.
-- `FruitList` — stateless, renders the table or returns null (empty state is handled in the results meta bar, not the list).
+- `FruitList` — stateless, renders sortable table headers (`name`, `color`, `in_season`) with an ascending/descending/disabled cycle.
+- `NotFound` — fallback UI for invalid frontend paths.
 
 ### Results meta and accessibility
 

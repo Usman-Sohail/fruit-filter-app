@@ -25,6 +25,7 @@ A small full-stack app built as part of an interview challenge.
       components/
         FilterBar.tsx             # Filter UI (name, color, in-season)
         FruitList.tsx             # Results table
+        NotFound.tsx              # Invalid-path fallback page
       hooks/
         useDebounce.ts            # Debounce hook for name input
       types/fruit.ts              # Shared TypeScript interfaces
@@ -76,7 +77,7 @@ cd backend
 npm test
 ```
 
-Expected output: 10 passing tests covering all filter combinations and edge cases.
+Expected output: 11 passing tests covering filter combinations and edge cases.
 
 ---
 
@@ -90,9 +91,10 @@ Returns all fruit sorted alphabetically by name. Supports query parameters:
 |-------------|--------|------------------------------------------------------------|
 | `color`     | string | Exact match, case-insensitive                              |
 | `in_season` | string | `"true"` or `"false"` — any other value is ignored        |
-| `name`      | string | Partial match anywhere in the name, case-insensitive       |
+| `name`      | string | Partial match anywhere in the name, case-insensitive (trimmed) |
 
 Filters are combinable and all optional.
+Malformed or non-string query shapes are sanitized to safe defaults.
 
 **Examples:**
 
@@ -118,12 +120,14 @@ GET /api/fruit?name=berry&in_season=false
 
 ## Features
 
-- Filter by name (partial, case-insensitive), color (exact), and in-season status
+- Filter by name (partial, case-insensitive, whitespace-safe), color (exact), and in-season status
 - Filters are reflected in and initialized from the browser URL query string
-- Browser back/forward navigation restores filter state correctly
+- Browser back/forward navigation restores filter state with stable history semantics
 - Name input is debounced (300 ms) to avoid hammering the API on every keystroke
-- Clear filters button resets all filters
+- Clear filters button resets only dropdown filters and preserves current search text
 - Results count shown after every fetch
+- Client-side table sorting on Name / Color / In Season with 3-state toggle (ascending, descending, disabled)
+- Not Found fallback page for invalid frontend paths
 - Loading, error, and empty-state feedback with appropriate ARIA roles
 - Vite dev proxy — frontend code uses relative `/api` paths, no hardcoded ports
 
