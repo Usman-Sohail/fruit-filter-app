@@ -2,7 +2,7 @@ function filterFruit(fruits, { color, in_season, name } = {}) {
   const normalizedName = typeof name === "string" ? name.trim().toLowerCase() : "";
 
   const filtered = fruits.filter((fruit) => {
-    if (color && fruit.color.toLowerCase() !== color.toLowerCase()) {
+    if (color && fruit.color.toLowerCase() !== color.trim().toLowerCase()) {
       return false;
     }
 
