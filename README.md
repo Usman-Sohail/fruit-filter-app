@@ -124,6 +124,7 @@ GET /api/fruit?name=berry&in_season=false
 - Filters are reflected in and initialized from the browser URL query string
 - Browser back/forward navigation restores filter state with stable history semantics
 - Name input is debounced (300 ms) to avoid hammering the API on every keystroke
+- Client-side pagination supports 10, 20, 50, or all results per page and keeps both `page` and `page_size` in the URL
 - Clear filters button resets only dropdown filters and preserves current search text
 - Results count shown after every fetch
 - Client-side table sorting on Name / Color / In Season with 3-state toggle (ascending, descending, disabled)

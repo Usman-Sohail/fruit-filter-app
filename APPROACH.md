@@ -56,6 +56,8 @@ The debounce also applies to URL updates: we don't push a new history entry on e
 
 One `filters` object drives everything: `{ name, color, in_season }`. When filters change, the URL is updated and a fetch fires. On initial load, filters are read from `window.location.search` (so a shared link restores the exact filter state). On `popstate`, filter state is re-read from the URL and the fetch re-runs.
 
+Pagination is handled client-side after filtering and sorting. That choice keeps the existing table sort semantics intact across the whole result set instead of sorting only one server page at a time. The current page and selected page size are reflected in the URL with `page` and `page_size` query params, and filter changes reset back to page 1 so users never land on an empty stale page.
+
 ### Component structure
 
 Kept small and flat — two focused components plus the root App:

@@ -5,9 +5,12 @@ import { useDebounce } from "./hooks/useDebounce";
 import FilterBar from "./components/FilterBar";
 import FruitList from "./components/FruitList";
 import NotFound from "./components/NotFound";
+import Pagination from "./components/Pagination";
 import "./index.css";
 
 const KNOWN_PATHS = ["/", "/index.html"];
+const DEFAULT_PAGE_SIZE = "10";
+const VALID_PAGE_SIZES = new Set(["10", "20", "50", "all"]);
 
 const EMPTY_FILTERS: FruitFilters = { name: "", color: "", in_season: "" };
 
@@ -20,21 +23,40 @@ function readFiltersFromURL(): FruitFilters {
   };
 }
 
+function readPageFromURL(): number {
+  const params = new URLSearchParams(window.location.search);
+  const parsedPage = Number(params.get("page"));
+  return Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+}
+
+function readPageSizeFromURL(): string {
+  const params = new URLSearchParams(window.location.search);
+  const pageSize = params.get("page_size") ?? DEFAULT_PAGE_SIZE;
+  return VALID_PAGE_SIZES.has(pageSize) ? pageSize : DEFAULT_PAGE_SIZE;
+}
+
 function areFiltersEqual(a: FruitFilters, b: FruitFilters): boolean {
   return a.name === b.name && a.color === b.color && a.in_season === b.in_season;
 }
 
-function buildSearchFromFilters(filters: FruitFilters): string {
+function buildSearchFromState(filters: FruitFilters, page: number, pageSize: string): string {
   const params = new URLSearchParams();
   if (filters.name) params.set("name", filters.name);
   if (filters.color) params.set("color", filters.color);
   if (filters.in_season) params.set("in_season", filters.in_season);
+  if (page > 1) params.set("page", String(page));
+  if (pageSize !== DEFAULT_PAGE_SIZE) params.set("page_size", pageSize);
   const search = params.toString();
   return search ? `?${search}` : "";
 }
 
-function syncFiltersToURL(filters: FruitFilters, mode: "push" | "replace") {
-  const nextSearch = buildSearchFromFilters(filters);
+function syncStateToURL(
+  filters: FruitFilters,
+  page: number,
+  pageSize: string,
+  mode: "push" | "replace"
+) {
+  const nextSearch = buildSearchFromState(filters, page, pageSize);
   if (window.location.search === nextSearch) return;
 
   const nextURL = `${window.location.pathname}${nextSearch}`;
@@ -50,6 +72,8 @@ export default function App() {
   const isKnownPath = KNOWN_PATHS.includes(window.location.pathname);
 
   const [filters, setFilters] = useState<FruitFilters>(readFiltersFromURL);
+  const [page, setPage] = useState<number>(readPageFromURL);
+  const [pageSizeOption, setPageSizeOption] = useState<string>(readPageSizeFromURL);
   const [fruits, setFruits] = useState<Fruit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,24 +99,47 @@ export default function App() {
   useEffect(() => {
     if (!isKnownPath) return;
     const effectiveFilters: FruitFilters = { name: debouncedName.trim(), color, in_season };
-    syncFiltersToURL(effectiveFilters, shouldReplaceHistoryRef.current ? "replace" : "push");
+    syncStateToURL(
+      effectiveFilters,
+      page,
+      pageSizeOption,
+      shouldReplaceHistoryRef.current ? "replace" : "push"
+    );
     shouldReplaceHistoryRef.current = false;
     loadFruit(effectiveFilters);
-  }, [debouncedName, color, in_season, isKnownPath, loadFruit]);
+  }, [debouncedName, color, in_season, isKnownPath, loadFruit, page, pageSizeOption]);
 
   useEffect(() => {
     if (!isKnownPath) return;
     const handlePop = () => {
       const nextFilters = readFiltersFromURL();
-      setFilters((prev) => {
-        if (areFiltersEqual(prev, nextFilters)) return prev;
-        shouldReplaceHistoryRef.current = true;
-        return nextFilters;
-      });
+      const nextPage = readPageFromURL();
+      const nextPageSize = readPageSizeFromURL();
+      const filtersChanged = !areFiltersEqual(filters, nextFilters);
+      const pageChanged = page !== nextPage;
+      const pageSizeChanged = pageSizeOption !== nextPageSize;
+
+      if (!filtersChanged && !pageChanged && !pageSizeChanged) {
+        return;
+      }
+
+      shouldReplaceHistoryRef.current = true;
+
+      if (filtersChanged) {
+        setFilters(nextFilters);
+      }
+
+      if (pageChanged) {
+        setPage(nextPage);
+      }
+
+      if (pageSizeChanged) {
+        setPageSizeOption(nextPageSize);
+      }
     };
     window.addEventListener("popstate", handlePop);
     return () => window.removeEventListener("popstate", handlePop);
-  }, [isKnownPath]);
+  }, [filters, isKnownPath, page, pageSizeOption]);
 
   const hasFilters = filters.name || filters.color || filters.in_season;
   const sortedFruits = useMemo(() => {
@@ -112,6 +159,34 @@ export default function App() {
     });
     return list;
   }, [fruits, sort]);
+  const effectivePageSize = pageSizeOption === "all" ? Math.max(1, sortedFruits.length) : Number(pageSizeOption);
+  const totalPages = Math.max(1, Math.ceil(sortedFruits.length / effectivePageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedFruits = useMemo(() => {
+    const startIndex = (currentPage - 1) * effectivePageSize;
+    return sortedFruits.slice(startIndex, startIndex + effectivePageSize);
+  }, [currentPage, effectivePageSize, sortedFruits]);
+
+  useEffect(() => {
+    if (page !== currentPage) {
+      setPage(currentPage);
+    }
+  }, [currentPage, page]);
+
+  function handleFiltersChange(nextFilters: FruitFilters) {
+    setPage(1);
+    setFilters(nextFilters);
+  }
+
+  function handlePageSizeChange(nextPageSize: string) {
+    setPage(1);
+    setPageSizeOption(nextPageSize);
+  }
+
+  function handleReset() {
+    setPage(1);
+    setFilters((prev) => ({ ...EMPTY_FILTERS, name: prev.name }));
+  }
 
   function handleSortChange(key: FruitSortKey) {
     setSort((prev) => {
@@ -135,10 +210,8 @@ export default function App() {
       <main className="app-main">
         <FilterBar
           filters={filters}
-          onChange={setFilters}
-          onReset={() =>
-            setFilters((prev) => ({ ...EMPTY_FILTERS, name: prev.name }))
-          }
+          onChange={handleFiltersChange}
+          onReset={handleReset}
         />
 
         <div aria-live="polite" aria-atomic="true" className="results-meta">
@@ -148,7 +221,7 @@ export default function App() {
                 ? hasFilters
                   ? "No fruit matches your filters."
                   : "No fruit available."
-                : `Showing ${fruits.length} ${fruits.length === 1 ? "result" : "results"}`}
+                : `${fruits.length} ${fruits.length === 1 ? "result" : "results"} total`}
             </span>
           )}
         </div>
@@ -164,7 +237,17 @@ export default function App() {
           </div>
         )}
         {!loading && !error && (
-          <FruitList fruits={sortedFruits} sort={sort} onSortChange={handleSortChange} />
+          <>
+            <FruitList fruits={paginatedFruits} sort={sort} onSortChange={handleSortChange} />
+            <Pagination
+              currentPage={currentPage}
+              totalItems={sortedFruits.length}
+              pageSize={effectivePageSize}
+              pageSizeOption={pageSizeOption}
+              onPageChange={setPage}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          </>
         )}
       </main>
     </div>
