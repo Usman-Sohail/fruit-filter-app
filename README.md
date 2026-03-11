@@ -2,7 +2,7 @@
 
 A small full-stack app built as part of an interview challenge.
 
-**Backend:** Node.js + Express — serves fruit data from a JSON file with filtering support.
+**Backend:** Node.js + Express + PostgreSQL/TypeORM — serves fruit data from a database with filtering support.
 **Frontend:** React + Vite + TypeScript — displays fruit with a live filter UI synced to the URL query string.
 
 ---
@@ -12,7 +12,9 @@ A small full-stack app built as part of an interview challenge.
 ```
 /
   backend/
-    data/fruitList.json           # Fruit data source
+    data/fruitList.json           # Seed data source for the database
+    db/                          # TypeORM data source, entities, seed script
+    migrations/                  # TypeORM migrations
     routes/fruitRoutes.js         # Express route: GET /api/fruit
     utils/filterFruit.js          # Pure filtering + sort logic
     utils/filterFruit.test.js     # Unit tests (Node built-in runner)
@@ -68,6 +70,7 @@ Database scripts:
 cd backend
 npm run db:show
 npm run db:migrate
+npm run db:seed
 npm run db:revert
 ```
 
@@ -100,7 +103,7 @@ Expected output: 11 passing tests covering filter combinations and edge cases.
 
 ### `GET /api/fruit`
 
-Returns all fruit sorted alphabetically by name. Supports query parameters:
+Returns all fruit from Postgres sorted alphabetically by name. Supports query parameters:
 
 | Param       | Type   | Behaviour                                                  |
 |-------------|--------|------------------------------------------------------------|

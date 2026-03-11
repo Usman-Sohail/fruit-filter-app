@@ -12,8 +12,8 @@ The goal was a simple, clean, interview-quality full-stack app: a Node/Express b
 
 Three purposeful layers, each with a single job:
 
-- **`server.js`** — wires up Express, CORS, and route mounting. Nothing else.
-- **`routes/fruitRoutes.js`** — handles the HTTP concern: reads the request, delegates filtering, sends the response.
+- **`server.js`** — wires up Express, CORS, route mounting, and the database connection lifecycle. Nothing else.
+- **`routes/fruitRoutes.js`** — handles the HTTP concern: reads the request, loads fruit rows from Postgres through TypeORM, delegates filtering, sends the response.
 - **`utils/filterFruit.js`** — pure function: takes a list and a filters object, returns a filtered and sorted list. Has no knowledge of HTTP.
 
 Keeping filtering in a pure function makes it trivially testable without starting a server.
