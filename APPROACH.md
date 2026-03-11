@@ -24,7 +24,7 @@ All three filters are applied in a single `.filter()` pass:
 
 - **`color`**: `toLowerCase()` on both sides — `?color=RED` behaves the same as `?color=red`.
 - **`in_season`**: The query string is always a string, so we guard strictly for `"true"` or `"false"`. Any other value (e.g. `?in_season=banana`) is **ignored** rather than silently misfiltering. The alternative — treating any non-`"true"` string as `false` — would return wrong results and be very hard to debug.
-- **`name`**: query is trimmed then matched via `String.prototype.includes()` after lowercasing both sides — partial, case-insensitive, and resilient to surrounding whitespace.
+- **`name`**: query is trimmed and lowercased first. Exact substring matches still work, and near-matches with a small edit distance also pass, so searches tolerate common typos like `aple` for `Apple` while staying bounded enough to avoid broad false positives.
 
 At route level, query values are sanitized to strings before reaching the filter utility. This avoids runtime crashes from malformed query shapes (e.g. repeated params producing arrays).
 

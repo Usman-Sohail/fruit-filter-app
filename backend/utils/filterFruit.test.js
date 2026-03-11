@@ -48,6 +48,18 @@ test("filters by name — partial match, case-insensitive", () => {
   assert.ok(result.every((f) => f.name.toLowerCase().includes("app")));
 });
 
+test("filters by name — fuzzy match tolerates a small typo", () => {
+  const result = filterFruit(FRUITS, { name: "aple" });
+  const names = result.map((f) => f.name);
+  assert.ok(names.includes("Apple"));
+});
+
+test("filters by name — fuzzy match works inside longer fruit names", () => {
+  const result = filterFruit(FRUITS, { name: "bery" });
+  const names = result.map((f) => f.name);
+  assert.deepEqual(names, ["Blueberry"]);
+});
+
 test("filters by name when query has surrounding whitespace", () => {
   const result = filterFruit(FRUITS, { name: "  app  " });
   assert.equal(result.length, 2);
