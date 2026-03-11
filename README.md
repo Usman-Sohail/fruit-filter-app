@@ -56,6 +56,21 @@ npm install
 npm run dev        # starts on http://localhost:3001
 ```
 
+For the Postgres/TypeORM setup, create `backend/.env` with:
+
+```env
+DATABASE_URL=postgresql://fruitapp:fruitpass@127.0.0.1:5433/fruitdb
+```
+
+Database scripts:
+
+```bash
+cd backend
+npm run db:show
+npm run db:migrate
+npm run db:revert
+```
+
 ### Frontend
 
 ```bash
