@@ -27,6 +27,10 @@ function getFuzzyThreshold(queryLength) {
   return 3;
 }
 
+function hasSameBoundaryChars(candidateName, query) {
+  return candidateName[0] === query[0] && candidateName.at(-1) === query.at(-1);
+}
+
 function matchesName(candidateName, query) {
   if (!query) return true;
   if (candidateName.includes(query)) return true;
@@ -34,16 +38,23 @@ function matchesName(candidateName, query) {
   const threshold = getFuzzyThreshold(query.length);
   if (threshold === 0) return false;
 
-  if (Math.abs(candidateName.length - query.length) <= threshold) {
+  if (
+    Math.abs(candidateName.length - query.length) <= threshold &&
+    hasSameBoundaryChars(candidateName, query)
+  ) {
     return getEditDistance(candidateName, query) <= threshold;
   }
 
-  const minWindowLength = Math.max(1, query.length - threshold);
+  const minWindowLength = query.length;
   const maxWindowLength = Math.min(candidateName.length, query.length + threshold);
 
   for (let windowLength = minWindowLength; windowLength <= maxWindowLength; windowLength += 1) {
     for (let start = 0; start <= candidateName.length - windowLength; start += 1) {
       const slice = candidateName.slice(start, start + windowLength);
+      if (!hasSameBoundaryChars(slice, query)) {
+        continue;
+      }
+
       if (getEditDistance(slice, query) <= threshold) {
         return true;
       }

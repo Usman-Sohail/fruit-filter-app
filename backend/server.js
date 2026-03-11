@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const AppDataSource = require("./db/data-source");
 const fruitRoutes = require("./routes/fruitRoutes");
 
 const app = express();
@@ -10,6 +11,13 @@ app.use(express.json());
 
 app.use("/api/fruit", fruitRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Backend running at http://localhost:${PORT}`);
-});
+AppDataSource.initialize()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Backend running at http://localhost:${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to initialize database connection.", error);
+    process.exit(1);
+  });

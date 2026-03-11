@@ -1,23 +1,22 @@
 const express = require("express");
-const path = require("path");
-const fs = require("fs");
+const AppDataSource = require("../db/data-source");
+const { FruitEntity } = require("../db/entities/Fruit");
 const { filterFruit } = require("../utils/filterFruit");
 
 const router = express.Router();
-const dataPath = path.join(__dirname, "../data/fruitList.json");
 
 function getStringQueryParam(value) {
   return typeof value === "string" ? value : "";
 }
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   let fruits;
 
   try {
-    const raw = fs.readFileSync(dataPath, "utf-8");
-    fruits = JSON.parse(raw);
+    const repository = AppDataSource.getRepository(FruitEntity);
+    fruits = await repository.find();
   } catch (err) {
-    return res.status(500).json({ error: "Failed to load fruit data." });
+    return res.status(500).json({ error: "Failed to load fruit data from the database." });
   }
 
   const color = getStringQueryParam(req.query.color);

@@ -60,6 +60,12 @@ test("filters by name — fuzzy match works inside longer fruit names", () => {
   assert.deepEqual(names, ["Blueberry"]);
 });
 
+test("filters by name — fuzzy match does not include unrelated names", () => {
+  const result = filterFruit(FRUITS, { name: "apple" });
+  const names = result.map((f) => f.name);
+  assert.deepEqual(names, ["Apple", "Pineapple"]);
+});
+
 test("filters by name when query has surrounding whitespace", () => {
   const result = filterFruit(FRUITS, { name: "  app  " });
   assert.equal(result.length, 2);

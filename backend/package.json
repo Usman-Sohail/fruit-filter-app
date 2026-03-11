@@ -9,7 +9,8 @@
     "test": "node --test utils/filterFruit.test.js",
     "db:migrate": "typeorm migration:run -d db/data-source.js",
     "db:revert": "typeorm migration:revert -d db/data-source.js",
-    "db:show": "typeorm migration:show -d db/data-source.js"
+    "db:show": "typeorm migration:show -d db/data-source.js",
+    "db:seed": "node db/seed.js"
   },
   "keywords": [],
   "author": "",
